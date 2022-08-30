@@ -2,9 +2,11 @@ import SwiftUI
 
 @main
 struct iOSApp: App {
-	var body: some Scene {
-		WindowGroup {
-			ContentView()
-		}
-	}
+    @StateObject private var viewModel = CheckConnectionViewModel()
+
+        var body: some Scene {
+            WindowGroup {
+                ConnectionStatusView().environmentObject(viewModel)
+            }
+        }
 }
