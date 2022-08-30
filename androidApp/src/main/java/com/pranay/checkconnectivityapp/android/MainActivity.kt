@@ -2,7 +2,7 @@ package com.pranay.checkconnectivityapp.android
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.pranay.checkconnectivityapp.Greeting
+import com.pranay.checkconnectivitykmp.Greeting
 import android.widget.TextView
 
 fun greet(): String {

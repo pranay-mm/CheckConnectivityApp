@@ -1,4 +1,4 @@
-package com.pranay.checkconnectivityapp
+package com.pranay.checkconnectivitykmp
 
 expect class ConnectivityCheck {
     fun stopListener()
