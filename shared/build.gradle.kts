@@ -20,6 +20,9 @@ kotlin {
         framework {
             baseName = "shared"
         }
+        pod("Reachability") {
+            version = "3.2"
+        }
     }
     
     sourceSets {
