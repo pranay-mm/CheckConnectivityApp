@@ -13,19 +13,16 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 actual class ConnectivityCheck(private val context: Context) {
-    private val isNetworkConnected = MutableStateFlow(false)
+    private val networkStatus = MutableStateFlow(false)
 
-    private var connectivityManager: ConnectivityManager? = null
+    private var connectivityManager: ConnectivityManager? = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     actual fun startListener(onConnectionStatus: (Boolean) -> Unit){
         initCallBack(onConnectionStatus)
         try {
-            if (connectivityManager == null) {
-                connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-            }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 connectivityManager?.apply {
                     registerDefaultNetworkCallback(networkCallback)
-                    isNetworkConnected.value=activeNetwork!=null
+                    networkStatus.value=activeNetwork!=null
                 }
             } else {
                 // API 23 and below
@@ -41,7 +38,7 @@ actual class ConnectivityCheck(private val context: Context) {
                     registerNetworkCallback(networkRequest, networkCallback)
                     @Suppress("DEPRECATION")
                     val currentNetwork = connectivityManager?.activeNetworkInfo
-                    isNetworkConnected.value = currentNetwork == null || (
+                    networkStatus.value = currentNetwork == null || (
                             currentNetwork.type != ConnectivityManager.TYPE_ETHERNET &&
                                     currentNetwork.type != ConnectivityManager.TYPE_WIFI &&
                                     currentNetwork.type != ConnectivityManager.TYPE_MOBILE
@@ -50,7 +47,7 @@ actual class ConnectivityCheck(private val context: Context) {
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            isNetworkConnected.value = false
+            networkStatus.value = false
         }
     }
     actual fun stopListener(){
@@ -58,7 +55,7 @@ actual class ConnectivityCheck(private val context: Context) {
     }
     private fun initCallBack(onConnectionStatus: (Boolean) -> Unit) {
         CoroutineScope(Dispatchers.Default).launch {
-            isNetworkConnected.collect { status ->
+            networkStatus.collect { status ->
                 withContext(Dispatchers.Main) {
                     onConnectionStatus(status)
                 }
@@ -67,11 +64,11 @@ actual class ConnectivityCheck(private val context: Context) {
     }
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: Network) {
-            isNetworkConnected.value = true
+            networkStatus.value = true
         }
 
         override fun onLost(network: Network) {
-            isNetworkConnected.value = false
+            networkStatus.value = false
         }
 
         override fun onCapabilitiesChanged(
@@ -80,7 +77,7 @@ actual class ConnectivityCheck(private val context: Context) {
         ) {
             super.onCapabilitiesChanged(network, networkCapabilities)
 
-            isNetworkConnected.value =
+            networkStatus.value =
                 networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
                         networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED) &&
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
