@@ -9,3 +9,4 @@ pluginManagement {
 rootProject.name = "CheckConnectivityApp"
 include(":androidApp")
 include(":shared")
+include(":webApp")

@@ -11,7 +11,14 @@ kotlin {
     iosX64()
     iosArm64()
     iosSimulatorArm64()
-
+    js(IR) {
+        browser{
+            binaries.executable()
+            commonWebpackConfig {
+                cssSupport.enabled = true
+            }
+        }
+    }
     cocoapods {
         summary = "Some description for the Shared Module"
         homepage = "Link to the Shared Module homepage"
@@ -60,6 +67,11 @@ kotlin {
             iosArm64Test.dependsOn(this)
             iosSimulatorArm64Test.dependsOn(this)
         }
+        val jsMain by getting{
+            dependencies {
+                implementation(npm("is-online","10.0.0", generateExternals = true))
+            }
+        }
     }
 }
 
@@ -75,4 +87,7 @@ kotlin.targets.withType(org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarge
     binaries.all {
         binaryOptions["memoryModel"] = "experimental"
     }
+}
+rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin> {
+    rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>().nodeVersion = "16.0.0"
 }
